@@ -1,8 +1,11 @@
 package routes
 
 import (
+	"encoding/json"
 	"net/http"
 	"wifi-go-backend/config"
+	"wifi-go-backend/internal/db"
+	"wifi-go-backend/internal/models"
 )
 
 func SetupRouter(cfg *config.Config) http.Handler {
@@ -21,7 +24,31 @@ func SetupRouter(cfg *config.Config) http.Handler {
 
 	// --- WiFi Management Endpoints ---
 	mux.HandleFunc("/api/wifi/scan", func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Scan for networks
+		if r.Method != http.MethodPost {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		var wifi models.WiFi
+		err := json.NewDecoder(r.Body).Decode(&wifi)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("Invalid request body"))
+			return
+		}
+		coll, err := db.GetWiFiCollection()
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("Database connection error"))
+			return
+		}
+		_, err = coll.InsertOne(r.Context(), wifi)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("Failed to save WiFi details"))
+			return
+		}
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte("WiFi details saved"))
 	})
 	mux.HandleFunc("/api/wifi/connect", func(w http.ResponseWriter, r *http.Request) {
 		// TODO: Connect to network
