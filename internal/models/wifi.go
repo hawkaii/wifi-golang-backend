@@ -1,9 +1,9 @@
 package models
 
 type Location struct {
-	Latitude  float64 `json:"latitude"`
-	Longitude float64 `json:"longitude"`
-	Address   string  `json:"address"`
+	Type        string    `bson:"type" json:"type"`
+	Coordinates []float64 `bson:"coordinates" json:"coordinates"` // [longitude, latitude]
+	Address     string    `bson:"address" json:"address"`
 }
 
 type WiFi struct {
@@ -11,4 +11,16 @@ type WiFi struct {
 	Password    string   `json:"password"`
 	Location    Location `json:"location"`
 	Description string   `json:"description"`
+}
+
+type GeoJSON struct {
+	Type        string    `json:"type"`
+	Coordinates []float64 `json:"coordinates"`
+}
+
+func (l Location) ToGeoJSON() GeoJSON {
+	return GeoJSON{
+		Type:        "Point",
+		Coordinates: l.Coordinates,
+	}
 }
