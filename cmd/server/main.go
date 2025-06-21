@@ -17,5 +17,6 @@ func main() {
 
 	cfg := config.Load()
 	router := routes.SetupRouter(cfg)
+	log.Println("Starting server on port 8080...")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
