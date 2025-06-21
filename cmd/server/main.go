@@ -5,9 +5,16 @@ import (
 	"net/http"
 	"wifi-go-backend/config"
 	"wifi-go-backend/internal/routes"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	// Load .env file
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found or failed to load")
+	}
+
 	cfg := config.Load()
 	router := routes.SetupRouter(cfg)
 	log.Fatal(http.ListenAndServe(":8080", router))
