@@ -72,6 +72,7 @@ func (h *Handlers) WiFiNearby(w http.ResponseWriter, r *http.Request, _ httprout
 		}
 		dist := haversine(lat, lng, wifiLat, wifiLng)
 		results = append(results, map[string]interface{}{
+			"id":          wifi.ID, // Add the ID field
 			"ssid":        wifi.SSID,
 			"location":    wifi.Location,
 			"distance":    dist,
