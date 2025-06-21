@@ -113,7 +113,6 @@ func SetupRouter(cfg *config.Config) http.Handler {
 	router.POST("/api/wifi/scan", auth.RequireAuthRouter(h.WiFiScan))
 	router.POST("/api/wifi/connect", auth.RequireAuthRouter(h.WiFiConnect))
 	router.GET("/api/wifi/nearby", h.WiFiNearby)
-	router.GET("/api/wifi/all", h.GetAllWiFi) // New route to get all WiFi networks
 	router.GET("/api/wifi/saved", auth.RequireAuthRouter(h.WiFiSaved))
 
 	// --- Statistics Endpoints ---

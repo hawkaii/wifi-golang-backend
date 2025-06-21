@@ -150,39 +150,6 @@ func (h *Handlers) WiFiNearby(w http.ResponseWriter, r *http.Request, _ httprout
 	json.NewEncoder(w).Encode(results)
 }
 
-// GetAllWiFi returns all WiFi networks in the database
-func (h *Handlers) GetAllWiFi(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	coll, err := db.GetWiFiCollection()
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Database connection error"))
-		return
-	}
-	cur, err := coll.Find(r.Context(), map[string]interface{}{})
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Failed to fetch WiFi list"))
-		return
-	}
-	defer cur.Close(r.Context())
-
-	var results []map[string]interface{}
-	for cur.Next(r.Context()) {
-		var wifi models.WiFi
-		if err := cur.Decode(&wifi); err != nil {
-			continue
-		}
-		results = append(results, map[string]interface{}{
-			"id":          wifi.ID,
-			"ssid":        wifi.SSID,
-			"location":    wifi.Location,
-			"description": wifi.Description,
-		})
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(results)
-}
-
 // Haversine formula to calculate distance between two lat/lng points in km
 func haversine(lat1, lng1, lat2, lng2 float64) float64 {
 	const R = 6371 // Earth radius in km
