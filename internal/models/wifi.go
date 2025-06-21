@@ -1,9 +1,14 @@
 package models
 
+type Location struct {
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
+	Address   string  `json:"address"`
+}
+
 type WiFi struct {
-	ID       string `bson:"_id,omitempty" json:"id,omitempty"`
-	SSID     string `bson:"ssid" json:"ssid"`
-	Password string `bson:"password" json:"password"`
-	Location string `bson:"location" json:"location"`
-	SharedBy string `bson:"shared_by" json:"shared_by"`
+	SSID        string   `json:"ssid"`
+	Password    string   `json:"password"`
+	Location    Location `json:"location"`
+	Description string   `json:"description"`
 }
