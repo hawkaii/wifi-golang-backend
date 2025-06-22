@@ -150,6 +150,76 @@ func (h *Handlers) WiFiNearby(w http.ResponseWriter, r *http.Request, _ httprout
 	json.NewEncoder(w).Encode(results)
 }
 
+// NearbyWiFiForStopsHandler handles POST /api/wifi/nearby/stops
+// Expects JSON body: { "stops": [ { "latitude": ..., "longitude": ..., "name": ... }, ... ] }
+// Returns: [{ stop: {...}, wifis: [...] }, ...]
+func (h *Handlers) NearbyWiFiForStopsHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	var req struct {
+		Stops []struct {
+			Latitude  float64 `json:"latitude"`
+			Longitude float64 `json:"longitude"`
+			Name      string  `json:"name"`
+		} `json:"stops"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Invalid JSON body"))
+		return
+	}
+
+	type WiFiWithStop struct {
+		Stop  map[string]interface{}   `json:"stop"`
+		WiFis []map[string]interface{} `json:"wifis"`
+	}
+	var results []WiFiWithStop
+	ctx := r.Context()
+	for _, stop := range req.Stops {
+		coll, err := db.GetWiFiCollection()
+		if err != nil {
+			continue
+		}
+		const radiusKm = 1.0
+		const earthRadiusKm = 6371.0
+		filter := map[string]interface{}{
+			"location": map[string]interface{}{
+				"$geoWithin": map[string]interface{}{
+					"$centerSphere": []interface{}{
+						[]float64{stop.Longitude, stop.Latitude},
+						radiusKm / earthRadiusKm,
+					},
+				},
+			},
+		}
+		cur, err := coll.Find(ctx, filter)
+		if err != nil {
+			continue
+		}
+		var wifis []map[string]interface{}
+		for cur.Next(ctx) {
+			var wifi models.WiFi
+			if err := cur.Decode(&wifi); err == nil {
+				wifis = append(wifis, map[string]interface{}{
+					"id":          wifi.ID,
+					"ssid":        wifi.SSID,
+					"location":    wifi.Location,
+					"description": wifi.Description,
+				})
+			}
+		}
+		cur.Close(ctx)
+		results = append(results, WiFiWithStop{
+			Stop: map[string]interface{}{
+				"latitude":  stop.Latitude,
+				"longitude": stop.Longitude,
+				"name":      stop.Name,
+			},
+			WiFis: wifis,
+		})
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(results)
+}
+
 // Haversine formula to calculate distance between two lat/lng points in km
 func haversine(lat1, lng1, lat2, lng2 float64) float64 {
 	const R = 6371 // Earth radius in km
