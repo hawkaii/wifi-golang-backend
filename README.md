@@ -1,6 +1,6 @@
 # wifi-golang-backend
 
-A backend server written in Go for managing WiFi network data, user authentication, and statistics, with a focus on secure OAuth flows and location-aware WiFi access.
+A backend server written in Go for managing WiFi network data, user authentication, statistics, and AI-powered travel recommendations, with a focus on secure OAuth flows and location-aware WiFi access.
 
 ---
 
@@ -12,6 +12,10 @@ A backend server written in Go for managing WiFi network data, user authenticati
   - Connect to WiFi networks with distance validation (ensures user is near the network).
   - List nearby WiFi networks based on geolocation.
   - Fetch all available and saved WiFi networks.
+- **AI-Powered Recommendations**:
+  - Integrates with Google Gemini AI to recommend interesting stops (landmarks, attractions, etc.) between two locations.
+  - For each recommended stop, fetches all available WiFi networks nearby.
+  - Enables users to plan routes and discover both places and connectivity along the way.
 - **Statistics**: Endpoints to get and update user/network statistics.
 - **MongoDB Integration**: Uses MongoDB for persistent storage with geospatial queries.
 - **Modular & Testable**: Handlers are structured for dependency injection and easy testing.
@@ -26,7 +30,7 @@ config/                    # Configuration loading (env, secrets)
 internal/auth/             # OAuth logic and authentication middleware
 internal/db/               # MongoDB connection and collections
 internal/models/           # Data models (WiFi, Location, etc.)
-internal/routes/           # HTTP route handlers
+internal/routes/           # HTTP route handlers (including AI recommendation)
 internal/utils/            # Utility functions
 ```
 
@@ -39,6 +43,7 @@ internal/utils/            # Utility functions
 - Go 1.18+
 - MongoDB (local or Atlas)
 - Civic OAuth credentials (Client ID, Secret, Redirect URI)
+- Google Gemini API Key (for recommendations)
 
 ### Environment Variables
 
@@ -48,6 +53,7 @@ Create a `.env` file in the project root with the following:
 MONGO_URI=mongodb+srv://<user>:<pass>@cluster0.mongodb.net/wifi_db?retryWrites=true&w=majority
 OAUTH_CLIENT_ID=your_civic_client_id
 OAUTH_CLIENT_SECRET=your_civic_client_secret
+GEMINI_API_KEY=your_gemini_api_key
 ```
 
 ### Installation and Running
@@ -77,11 +83,17 @@ Server will start on `:8080` by default.
 - `GET /api/wifi/nearby` — List nearby networks (latitude/longitude required)
 - `GET /api/wifi/all` — List all WiFi networks
 - `GET /api/wifi/saved` — List saved WiFi networks (requires auth)
+- `POST /api/wifi/nearby/stops` — Given a list of stops, returns all WiFi networks near each stop
 
-### Statistics Endpoints
+### AI Recommendation Endpoints
 
-- `GET /api/stats` — Get user/network stats (requires auth)
-- `PATCH /api/stats` — Update statistics (requires auth)
+- `GET /api/gemini/recommendstops`  
+  Returns 5 recommended stops (landmarks, attractions, etc.) between two coordinates using Gemini AI.  
+  **Query parameters:** `start_lat`, `start_lng`, `end_lat`, `end_lng`
+
+- `GET /api/gemini/recommendstopswifi`  
+  Returns 5 recommended stops between two coordinates, and for each stop, lists all nearby WiFi networks.  
+  **Query parameters:** `start_lat`, `start_lng`, `end_lat`, `end_lng`
 
 ---
 
@@ -91,6 +103,8 @@ Server will start on `:8080` by default.
 - Auth middleware is designed for upgradeability (currently checks a test token, easily extended for real JWT/OAuth).
 - Geospatial queries and distance checks use MongoDB’s `$geoWithin` and the Haversine formula.
 - **Mobile/remote DB connection:** When connecting from a mobile device, ensure your public IP is whitelisted in your MongoDB instance. Avoid `0.0.0.0/0` in production.
+- **Gemini AI Integration:**  
+  The backend uses Google Gemini AI for intelligent, real-world stop recommendations along a route. This enables users to discover both interesting places and available WiFi networks for a seamless travel experience.
 
 ---
 
@@ -99,6 +113,7 @@ Server will start on `:8080` by default.
 - **MongoDB connection from mobile:** Check your public IP (`whatismyip.com`) and whitelist it in MongoDB Atlas. Be aware of carrier NAT and dynamic IPs.
 - **OAuth redirect issues:** The redirect URI in Civic app settings must exactly match the backend route.
 - **Port errors:** If deploying in the cloud, check your provider’s port and firewall settings.
+- **Gemini API issues:** Ensure your `GEMINI_API_KEY` is set and valid. Check logs for AI response or parsing errors.
 
 ---
 
