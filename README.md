@@ -4,6 +4,19 @@ A backend server written in Go for managing WiFi network data, user authenticati
 
 ---
 
+## Tap2Wifi App Download
+
+You can download the latest Tap2Wifi mobile app from the [releases page](https://github.com/hawkaii/Tap2Wifi/releases/tag/1.0.0).
+
+**Instructions:**
+- Visit the link above.
+- Download the APK or release file suitable for your device.
+- Install it on your phone (you may need to allow installation from unknown sources).
+
+> **Note:** Gemini AI integration in the frontend app is not yet complete. However, you can call the backend API endpoints directly for AI-powered recommendations and WiFi discovery. For API usage and details, see this [backend repository](https://github.com/hawkaii/wifi-golang-backend).
+
+---
+
 ## Features
 
 - **OAuth Authentication**: Implements Civic OAuth2 with PKCE for secure user authentication.
