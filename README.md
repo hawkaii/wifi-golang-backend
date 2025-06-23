@@ -13,7 +13,7 @@ You can download the latest Tap2Wifi mobile app from the [releases page](https:/
 - Download the APK or release file suitable for your device.
 - Install it on your phone (you may need to allow installation from unknown sources).
 
-> **Note:** Gemini AI integration in the frontend app is not yet complete. However, you can call the backend API endpoints directly for AI-powered recommendations and WiFi discovery. For API usage and details, see this [backend repository](https://github.com/hawkaii/wifi-golang-backend).
+> **Note:** Gemini AI integration in the frontend app is not yet complete. However, you can call the backend API endpoints directly for AI-powered recommendations and WiFi discovery. For an example and test, see the [Gemini AI Integration section below](#example-gemini-ai-integration-for-route--wifi-discovery).
 
 ---
 
@@ -127,6 +127,84 @@ Server will start on `:8080` by default.
 - **OAuth redirect issues:** The redirect URI in Civic app settings must exactly match the backend route.
 - **Port errors:** If deploying in the cloud, check your provider’s port and firewall settings.
 - **Gemini API issues:** Ensure your `GEMINI_API_KEY` is set and valid. Check logs for AI response or parsing errors.
+
+---
+
+## Example: Gemini AI Integration for Route & WiFi Discovery
+
+The backend exposes a powerful AI-driven endpoint that combines Gemini recommendations with real WiFi data. You can test this using the following public API:
+
+**Example Endpoint:**
+```
+GET https://wifi-golang-backend.onrender.com/api/gemini/recommendstopswifi?start_lat=22.5299&start_lng=88.3461&end_lat=22.5788&end_lng=88.47643
+```
+
+**Sample Response:**
+```json
+{
+  "route_description": "This route takes you through central Kolkata, starting near the Eden Gardens and progressing towards Belur Math.  It includes iconic landmarks such as the Victoria Memorial, Howrah Bridge, and St. Paul's Cathedral, offering a blend of historical and religious sites along the way.",
+  "stops_with_wifi": [
+    {
+      "stop": {
+        "latitude": 22.5367,
+        "longitude": 88.3567,
+        "name": "Eden Garden"
+      },
+      "wifis": [
+        {
+          "description": "WiFi at Victoria Cafe",
+          "id": "68574417775e9d02d472c69d",
+          "location": {
+            "type": "Point",
+            "coordinates": [88.3562, 22.537],
+            "address": "Victoria Memorial, Kolkata"
+          },
+          "ssid": "CafeVictoria"
+        }
+      ]
+    },
+    {
+      "stop": {
+        "latitude": 22.5456,
+        "longitude": 88.3761,
+        "name": "Victoria Memorial"
+      },
+      "wifis": null
+    },
+    {
+      "stop": {
+        "latitude": 22.553,
+        "longitude": 88.401,
+        "name": "Howrah Bridge"
+      },
+      "wifis": null
+    },
+    {
+      "stop": {
+        "latitude": 22.5634,
+        "longitude": 88.4342,
+        "name": "St. Paul's Cathedral"
+      },
+      "wifis": null
+    },
+    {
+      "stop": {
+        "latitude": 22.572,
+        "longitude": 88.461,
+        "name": "Belur Math"
+      },
+      "wifis": null
+    }
+  ]
+}
+```
+
+**How it works:**
+- Gemini AI suggests 5 interesting stops along your route.
+- For each stop, the backend lists all available WiFi networks nearby (if any exist in the database).
+- The response includes a human-readable route description and a list of stops with their WiFi details.
+
+You can use this endpoint to build travel apps, plan routes, or simply discover both places and connectivity along your journey.
 
 ---
 
